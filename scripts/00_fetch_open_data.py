@@ -178,17 +178,18 @@ def fetch_gbif_occurrences(aoi_gdf: gpd.GeoDataFrame, taxon: str = "Aves", limit
     df = df[[c for c in keep if c in df.columns]]
     return df
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--place", type=str, required=True, help="地名（例如：Singapore、Beijing、Nairobi）")
-    parser.add_argument("--buffer_km", type=float, default=20, help="可选缓冲距离（km），扩大研究区范围")
-    args = parser.parse_args()
+def run(place: str, buffer_km: float = 20.0) -> None:
+    """执行零账号开源数据拉取流程。
+
+    该函数将研究区范围、多源栅格和矢量数据写入 ``data`` 目录，
+    便于在交互式入口（如 CLI 或 Notebook）中重复调用。
+    """
 
     RAW_DIR.mkdir(parents=True, exist_ok=True)
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
 
     # 1) 研究区
-    aoi = geocode_aoi(args.place, buffer_km=args.buffer_km)
+    aoi = geocode_aoi(place, buffer_km=buffer_km)
     aoi_path = PROCESSED_DIR / "aoi.gpkg"
     aoi.to_file(aoi_path, driver="GPKG")
     print(f"[AOI] 已保存 {aoi_path}")
@@ -202,10 +203,12 @@ def main():
     else:
         print("[WorldCover] 未能找到覆盖瓦片，请扩大缓冲或检查网络。")
 
+    place_slug = place.replace(" ", "_")
+
     # 3) OSM 道路
     try:
         roads = fetch_osm_roads(aoi)
-        roads_path = RAW_DIR / f"osm_roads_{args.place.replace(' ', '_')}.gpkg"
+        roads_path = RAW_DIR / f"osm_roads_{place_slug}.gpkg"
         roads.to_file(roads_path, driver="GPKG")
         print(f"[OSM] 道路写入 {roads_path}")
     except Exception as e:
@@ -214,7 +217,7 @@ def main():
     # 4) GBIF 物种（示例：鸟类 Aves 2000 条）
     try:
         df = fetch_gbif_occurrences(aoi, taxon="Aves", limit=2000)
-        gbif_path = RAW_DIR / f"gbif_occ_{args.place.replace(' ', '_')}.parquet"
+        gbif_path = RAW_DIR / f"gbif_occ_{place_slug}.parquet"
         if len(df):
             df.to_parquet(gbif_path, index=False)
             print(f"[GBIF] 记录数：{len(df)}，写入 {gbif_path}")
@@ -222,6 +225,15 @@ def main():
             print("[GBIF] 未获取到记录，建议增大 limit 或更换 taxon。")
     except Exception as e:
         print("[GBIF] 拉取失败：", e)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--place", type=str, required=True, help="地名（例如：Singapore、Beijing、Nairobi）")
+    parser.add_argument("--buffer_km", type=float, default=20, help="可选缓冲距离（km），扩大研究区范围")
+    args = parser.parse_args()
+
+    run(place=args.place, buffer_km=args.buffer_km)
 
 if __name__ == "__main__":
     main()
