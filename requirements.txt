@@ -1,0 +1,43 @@
+# scientific computing
+numpy
+pandas
+xarray
+dask
+
+# geospatial
+geopandas
+shapely
+pyogrio
+pyproj
+rasterio
+rioxarray
+pyprojroot
+pylandstats
+osmnx
+networkx
+scikit-image
+
+# data download & IO
+requests
+tqdm
+
+# biodiversity & statistics
+scikit-bio
+statsmodels
+linearmodels
+pymc
+arviz
+
+# visualization
+matplotlib
+seaborn
+
+# misc
+typer
+pyyaml
+rich
+
+# extra deps for data pulling
+pygbif
+pystac-client
+boto3
