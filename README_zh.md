@@ -25,7 +25,19 @@ conda create -n mobiodiv python=3.11 -y
 conda activate mobiodiv
 
 # 基础科学计算 + 地理空间 + 因果/面板 + 绘图
-pip install -r requirements.txt
+ pip install -r requirements.txt
+```
+
+## 命令行入口（可选）
+
+安装依赖后，可通过 `python -m mobiodiv` 调用集成入口，例如：
+
+```bash
+# 查看脚本列表
+python -m mobiodiv list-scripts
+
+# 直接执行开源数据拉取脚本
+python -m mobiodiv fetch-open-data --place "Singapore" --buffer-km 20
 ```
 
 ## 快速开始（建议顺序）
